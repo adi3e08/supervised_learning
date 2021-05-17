@@ -8,10 +8,10 @@ class Net(torch.nn.Module):
         self.fc1 = torch.nn.Linear(D_in, H)
         self.fc2 = torch.nn.Linear(H, D_out)
     def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        y1 = F.relu(self.fc1(x))
+        y2 = self.fc2(y1)
 
-        return x
+        return y2
 
 def main():
 
@@ -20,8 +20,8 @@ def main():
     N, D_in, H, D_out = 32, 4, 32, 2 # batch size, input size, hidden size, output size 
 
     # create random tensors to hold inputs and outputs
-    x = torch.randn(N, D_in).to(device)
-    y = torch.randn(N, D_out).to(device)
+    X = torch.randn(N, D_in).to(device)
+    Y = torch.randn(N, D_out).to(device)
 
     model = Net(D_in, H, D_out).to(device)
 
@@ -38,10 +38,10 @@ def main():
     for i in range(10000):
 
         # forward pass
-        y_pred = model(x)
+        Y_pred = model(X)
 
         # compute and print loss
-        loss = loss_fn(y_pred, y)
+        loss = loss_fn(Y_pred, Y)
         # print(i, loss.item())
         writer.add_scalar('loss', loss.item(), i)
 
