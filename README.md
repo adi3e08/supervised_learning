@@ -1,2 +1,2 @@
-# supervised_learning_examples
-Sample code for supervised learning tasks, using Pytorch.
+# supervised_learning
+Code for different supervised learning tasks, written in Pytorch.
