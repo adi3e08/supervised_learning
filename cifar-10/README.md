@@ -7,4 +7,5 @@ Classify images from CIFAR-10 dataset. The CIFAR-10 dataset consists of 60000 32
 ## Instructions
 1. Download CIFAR-10 python version from the [CIFAR-10 website](https://www.cs.toronto.edu/~kriz/cifar.html).
 2. Extract cifar-10-python.tar.gz.
+3. Run python train.py
 
