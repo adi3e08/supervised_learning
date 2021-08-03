@@ -2,7 +2,9 @@
 
 Classify images from CIFAR-10 dataset. The CIFAR-10 dataset consists of 60000 32x32 colour images in 10 classes, with 6000 images per class. There are 50000 training images and 10000 test images. 
 
-![cifar-10](imgs/cifar-10.png)
+<p align="center">
+<img src="imgs/cifar-10.png" width="75%" height="75%"/>
+</p>
 
 ## Instructions
 1. Download CIFAR-10 python version from the [CIFAR-10 website](https://www.cs.toronto.edu/~kriz/cifar.html).
@@ -30,7 +32,7 @@ Test Accuracy vs Epochs. Achieved around 76% accuracy after nearly 75 epochs. Th
 Sample Prediction #1
 </p>
 <p align="center">
-<img src="imgs/img1.png" width="75%" height="75%"/>
+<img src="imgs/img1.png" width="50%" height="50%"/>
 </p>
 <p align="center">
 <img src="imgs/pred1.png" width="75%" height="75%"/>
@@ -40,7 +42,7 @@ Sample Prediction #1
 Sample Prediction #2
 </p>
 <p align="center">
-<img src="imgs/img2.png" width="75%" height="75%"/>
+<img src="imgs/img2.png" width="50%" height="50%"/>
 </p>
 <p align="center">
 <img src="imgs/pred2.png" width="75%" height="75%"/>
