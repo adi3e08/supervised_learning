@@ -2,26 +2,8 @@ import os
 import numpy as np
 import torch
 import torchvision
-import torch.nn.functional as F
+from train import Net
 import matplotlib.pyplot as plt
-
-class Net(torch.nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.conv1 = torch.nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1)
-        self.conv2 = torch.nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1)
-        self.pool = torch.nn.MaxPool2d(kernel_size=2)
-        self.fc1 = torch.nn.Linear(4096, 4096)
-        self.fc2 = torch.nn.Linear(4096, 10)
-
-    def forward(self, x):
-        y1 = self.pool(F.relu(self.conv1(x)))
-        y2 = self.pool(F.relu(self.conv2(y1)))
-        y2 = y2.view(-1, 4096)
-        y3 = F.relu(self.fc1(y2))
-        y = self.fc2(y3)
-
-        return y
 
 def imshow(img):
     img = img / 2 + 0.5     # unnormalize
