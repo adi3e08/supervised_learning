@@ -47,3 +47,13 @@ Sample Prediction #2
 <p align="center">
 <img src="imgs/pred2.png" width="75%" height="75%"/>
 </p>
+
+<p align="center">
+Sample Prediction #3
+</p>
+<p align="center">
+<img src="imgs/img3.png" width="50%" height="50%"/>
+</p>
+<p align="center">
+<img src="imgs/pred3.png" width="75%" height="75%"/>
+</p>
