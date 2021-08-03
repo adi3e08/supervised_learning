@@ -8,5 +8,5 @@ Basic example illustrating the supervised learning pipeline in Pytorch. Train a 
 The training loss has converged, indicating successful training.
 </p>
 <p align="center">
-<img src="imgs/loss.png" width="50%" height="50%"/>
+<img src="imgs/loss.png" width="75%" height="75%"/>
 </p>
