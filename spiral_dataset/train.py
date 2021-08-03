@@ -1,48 +1,63 @@
+import os
 import numpy as np
 import torch
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
-import matplotlib.pyplot as plt
 
 class Net(torch.nn.Module):
-    def __init__(self, D_in, H, D_out):
+    def __init__(self, D_in, D_out):
         super(Net,self).__init__()
-        self.linear1=torch.nn.Linear(D_in,H)
-        self.linear2=torch.nn.Linear(H,D_out)
+        self.fc1=torch.nn.Linear(D_in,128)
+        self.fc2=torch.nn.Linear(128,128)
+        self.fc3=torch.nn.Linear(128,D_out)
  
     def forward(self, x):
-        h_relu=F.relu(self.linear1(x))
-        y_pred=self.linear2(h_relu)
-        return y_pred
+        y1 = F.relu(self.fc1(x))
+        y2 = F.relu(self.fc2(y1))
+        y3 = self.fc3(y2)
 
+        return y3
+
+class SpiralDataset(torch.utils.data.Dataset):
+    """Spiral dataset."""
+
+    def __init__(self, path, train):
+        dataset = np.load(path)
+        if train:
+            self.X, self.Y = dataset['X_train'], dataset['Y_train']
+        else:
+            self.X, self.Y = dataset['X_test'], dataset['Y_test']
+
+    def __len__(self):
+        return len(self.Y)
+
+    def __getitem__(self, idx):
+
+        return self.X[idx], self.Y[idx]
 
 def main():
+
+    expt_name = "expt_1"
+
+    train_data = SpiralDataset("./data/dataset.npz",train=True)
+    train_loader = torch.utils.data.DataLoader(train_data,
+                                              batch_size=8,
+                                              shuffle=True,
+                                              num_workers=2)
+
+    test_data = SpiralDataset("./data/dataset.npz",train=False)
+    test_loader = torch.utils.data.DataLoader(test_data,
+                                              batch_size=90,
+                                              shuffle=True,
+                                              num_workers=2)
+
+
     device = torch.device("cpu")
+    # device = torch.device("cuda:0")
 
-    N, D_in, H, D_out = 300, 2, 100, 3 # batch size, input size, hidden size, output size 
+    D_in, D_out = 2, 3 # input size, output size 
 
-    # Generate Spiral Dataset
-    X=np.zeros((N, D_in))
-    Y=np.zeros(N)
-    for k in range(3):
-        for n in range(100):
-            r = (n+1.0)/N
-            t= np.pi/3.0+ k*2.0*np.pi/3.0-7*np.pi/(6.0 * 99.0)*n
-            Y[(k*100+n)]=k
-            X[(k*100+n),0]=r*np.cos(t)
-            X[(k*100+n),1]=r*np.sin(t)
-            
-    # fig = plt.figure()
-    # plt.scatter(X[:100,0],X[:100,1],color='red')
-    # plt.scatter(X[100:200,0],X[100:200,1],color='green')
-    # plt.scatter(X[200:300,0],X[200:300,1],color='blue')
-    # plt.show()
-    # #fig.savefig('temp.png', dpi=fig.dpi)
-
-    X = torch.tensor(X, dtype=torch.float).to(device)
-    Y = torch.tensor(Y, dtype=torch.long).to(device)
-
-    model = Net(D_in, H, D_out).to(device)
+    model = Net(D_in, D_out).to(device)
     loss_fn = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
@@ -50,26 +65,74 @@ def main():
         os.mkdir("./log")
     except :
         pass
-    writer = SummaryWriter(log_dir="./log")
-    
-    for i in range(100000):
+    exp_dir = os.path.join("./log", expt_name)
+    model_dir = os.path.join(exp_dir, "models")
+    tensorboard_dir = os.path.join(exp_dir, "tensorboard")
+    os.mkdir(exp_dir)
+    os.mkdir(model_dir)
+    os.mkdir(tensorboard_dir)
+    writer = SummaryWriter(log_dir=tensorboard_dir)
 
-        # forward pass
-        Y_pred = model(X)
+    max_epochs = 1000
 
-        # compute and print loss
-        loss = loss_fn(Y_pred, Y)
-        # print(i, loss.item())
-        writer.add_scalar('loss', loss.item(), i)
+    # Loop over epochs
+    for epoch in range(max_epochs):
 
-        # zero gradients
-        optimizer.zero_grad()
+        print("\nEpoch : ", epoch)
+        
+        epoch_train_loss = 0.0
+        total = 0
 
-        # backward pass
-        loss.backward()
+        # Training
+        for X, Y in train_loader:
+            
+            # Transfer to device
+            X, Y = X.to(torch.float).to(device), Y.to(torch.long).to(device)
+            
+            Y_pred = model(X)
 
-        # update parameters
-        optimizer.step()
+            # Compute and print loss.
+            loss = loss_fn(Y_pred, Y)
+            epoch_train_loss += (loss.item()*Y.size(0))
+            total += Y.size(0)
+
+            optimizer.zero_grad()
+
+            loss.backward()
+
+            optimizer.step()
+
+        epoch_train_loss /= total
+        print("Train Loss : ",epoch_train_loss)
+        writer.add_scalar('train_loss', epoch_train_loss, epoch)
+
+
+        # Testing
+        epoch_test_loss = 0.0
+        correct = 0
+        total = 0
+
+        for X, Y in test_loader:
+            # Transfer to device
+            X, Y = X.to(torch.float).to(device), Y.to(torch.long).to(device)            
+            with torch.set_grad_enabled(False):
+                Y_pred = model(X)
+            loss = loss_fn(Y_pred, Y)
+            epoch_test_loss += (loss.item()*Y.size(0))
+            total += Y.size(0)
+            _, predicted = torch.max(Y_pred, 1)
+            correct += (predicted == Y).sum().item()
+
+        epoch_test_loss /= total
+        print("Test Loss : ",epoch_test_loss)
+        writer.add_scalar('test_loss', epoch_test_loss, epoch)
+        accuracy = 100 * correct / total 
+        print("Test Accuracy : ",accuracy)
+        writer.add_scalar('test_accuracy', accuracy, epoch)
+
+        #Save checkpoint
+        if epoch % 100:
+            torch.save({'model' : model.state_dict()}, os.path.join(model_dir, str(epoch)+".ckpt"))
 
     writer.close()
 
