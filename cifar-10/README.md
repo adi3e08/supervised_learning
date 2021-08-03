@@ -22,7 +22,7 @@ Training Loss vs Epochs.
 </p>
 
 <p align="center">
-Test Accuracy vs Epochs. Achieved around 76% accuracy after nearly 75 epochs. These are expected results as we used a simple CNN architecture and also did not perform any data augmentation. 
+Test Accuracy vs Epochs. Achieved around 76% accuracy on test data. We used a simple CNN architecture and did not perform any data augmentation. 
 </p>
 <p align="center">
 <img src="imgs/test_accuracy.png" width="75%" height="75%"/>
