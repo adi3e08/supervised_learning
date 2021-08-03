@@ -17,7 +17,7 @@ def main():
 
     device = torch.device("cpu")
 
-    N, D_in, H, D_out = 32, 4, 32, 2 # batch size, input size, hidden size, output size 
+    N, D_in, H, D_out = 32, 4, 64, 2 # batch size, input size, hidden size, output size 
 
     # create random tensors to hold inputs and outputs
     X = torch.randn(N, D_in).to(device)
@@ -35,7 +35,7 @@ def main():
         pass
     writer = SummaryWriter(log_dir="./log")
     
-    for i in range(10000):
+    for i in range(25000):
 
         # forward pass
         Y_pred = model(X)
