@@ -1,3 +1,4 @@
+import os
 import torch
 import torchvision
 import torch.nn.functional as F
@@ -23,6 +24,8 @@ class Net(torch.nn.Module):
 
 def main():
 
+    expt_name = "expt_1"
+
     transform = torchvision.transforms.Compose([
         # you can add other transformations in this list
         torchvision.transforms.ToTensor(),
@@ -31,13 +34,13 @@ def main():
 
     train_data = torchvision.datasets.CIFAR10("cifar-10-python",train=True, transform=transform)
     train_loader = torch.utils.data.DataLoader(train_data,
-                                              batch_size=32,
+                                              batch_size=128,
                                               shuffle=True,
                                               num_workers=2)
 
     test_data = torchvision.datasets.CIFAR10("cifar-10-python",train=False, transform=transform)
-    test_loader = torch.utils.data.DataLoader(train_data,
-                                              batch_size=32,
+    test_loader = torch.utils.data.DataLoader(test_data,
+                                              batch_size=128,
                                               shuffle=True,
                                               num_workers=2)
 
@@ -49,13 +52,19 @@ def main():
 
     loss_fn = torch.nn.CrossEntropyLoss()
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=2.5e-4)
 
     try:
         os.mkdir("./log")
     except :
         pass
-    writer = SummaryWriter(log_dir="./log")
+    exp_dir = os.path.join("./log", expt_name)
+    model_dir = os.path.join(exp_dir, "models")
+    tensorboard_dir = os.path.join(exp_dir, "tensorboard")
+    os.mkdir(exp_dir)
+    os.mkdir(model_dir)
+    os.mkdir(tensorboard_dir)
+    writer = SummaryWriter(log_dir=tensorboard_dir)
 
     max_epochs = 100
 
@@ -70,7 +79,7 @@ def main():
         # Training
         for X, Y in train_loader:
             
-            # Transfer to GPU
+            # Transfer to device
             X, Y = X.to(device), Y.to(device)
             
             Y_pred = model(X)
@@ -92,40 +101,30 @@ def main():
 
 
         # Testing
-        """
         epoch_test_loss = 0.0
+        correct = 0
         total = 0
 
-        with torch.set_grad_enabled(False):
-            for X, Y in test_loader:
-                # Transfer to GPU
-                X, Y = X.to(device), Y.to(device)
-                
+        for X, Y in test_loader:
+            # Transfer to device
+            X, Y = X.to(device), Y.to(device)            
+            with torch.set_grad_enabled(False):
                 Y_pred = model(X)
-
-                # Compute and print loss.
-                loss = loss_fn(Y_pred, Y)
-                epoch_test_loss += (loss.item()*Y.size(0))
-                total += Y.size(0)
+            loss = loss_fn(Y_pred, Y)
+            epoch_test_loss += (loss.item()*Y.size(0))
+            total += Y.size(0)
+            _, predicted = torch.max(Y_pred, 1)
+            correct += (predicted == Y).sum().item()
 
         epoch_test_loss /= total
         print("Test Loss : ",epoch_test_loss)
         writer.add_scalar('test_loss', epoch_test_loss, epoch)
-        print(" ")
-        """
-        correct = 0
-        total = 0
-        with torch.set_grad_enabled(False):
-            for X, Y in test_loader:
-                # Transfer to GPU
-                X, Y = X.to(device), Y.to(device)            
-                Y_pred = model(X)
-                _, predicted = torch.max(Y_pred.detach(), 1)
-                total += Y.size(0)
-                correct += (predicted == Y).sum().item()
         accuracy = 100 * correct / total 
         print("Test Accuracy : ",accuracy)
         writer.add_scalar('test_accuracy', accuracy, epoch)
+
+        #Save checkpoint
+        torch.save({'model' : model.state_dict()}, os.path.join(model_dir, str(epoch)+".ckpt"))
 
     writer.close()
 
