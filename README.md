@@ -1,2 +1,2 @@
 # supervised_learning
-Code for different supervised learning tasks, written in Pytorch.
+Code for some supervised learning tasks that I experimented with.
