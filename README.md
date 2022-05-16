@@ -1,2 +1,2 @@
-# supervised_learning
-Code for some supervised learning tasks that I experimented with.
+# supervised_learning_examples
+Code for some simple supervised learning tasks that I experimented with during self study.
